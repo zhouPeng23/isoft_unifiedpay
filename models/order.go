@@ -70,7 +70,7 @@ func (this *Order)Refund(order Order) error {
 		logs.Error("退货订单入库失败:",order.OrderId,"原交易订单:",order.OrgOrderId,"失败原因:",e)
 		return errors.New("退货订单入库失败")
 	}
-	//5.设置原交易已退金额
+	//5.更新原交易已退金额
 	originalOrder.RefundedAmount = originalOrder.RefundedAmount + refundAmount
 	o.Update(&originalOrder,"RefundedAmount")
 	return nil
