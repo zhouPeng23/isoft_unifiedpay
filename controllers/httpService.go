@@ -17,39 +17,14 @@ var (
 	lock sync.Mutex
 )
 
-//生成订单随机数
-func queryUniqueRandom() string {
-	if intRandom == 999999999{
-		intRandom = 100000000
-	}
-	lock.Lock()
-	intRandom++
-	lock.Unlock()
-	//获取一个长度为9的唯一数字字符串（给自己人看的）
-	intStr9 := "000000000" + fmt.Sprintf("%d",intRandom)
-	intStr9 = intStr9[len(intStr9)-9:len(intStr9)]
-	//获取一个长度为7的随机数（用于干扰别有用心者）
-	rand.Seed(time.Now().UnixNano())
-	random := rand.Intn(7777777)
-	strRandom7 := "0000000" + fmt.Sprintf("%d", random)
-	strRandom7 = strRandom7[len(strRandom7)-7:len(strRandom7)]
-	return intStr9 + strRandom7
+
+//支付
+func (this *MainController)Pay(){
+	go this.WeChatPay()
 }
 
 
 //下单发送https请求-对接微信支付
-func (this *MainController)Pay(){
-	var count int64
-	for true {
-		count++
-		go this.WeChatPay()
-		if count == 100 {
-			break
-		}
-	}
-
-}
-
 func (this *MainController)WeChatPay() error {
 	//界面接收的参数
 	//productId := this.GetString("ProductId")
@@ -91,3 +66,21 @@ func (this *MainController)WeChatPay() error {
 }
 
 
+//生成订单随机数
+func queryUniqueRandom() string {
+	if intRandom == 999999999{
+		intRandom = 100000000
+	}
+	lock.Lock()
+	intRandom++
+	lock.Unlock()
+	//获取一个长度为9的唯一数字字符串（给自己人看的）
+	intStr9 := "000000000" + fmt.Sprintf("%d",intRandom)
+	intStr9 = intStr9[len(intStr9)-9:len(intStr9)]
+	//获取一个长度为7的随机数（用于干扰别有用心者）
+	rand.Seed(time.Now().UnixNano())
+	random := rand.Intn(7777777)
+	strRandom7 := "0000000" + fmt.Sprintf("%d", random)
+	strRandom7 = strRandom7[len(strRandom7)-7:len(strRandom7)]
+	return intStr9 + strRandom7
+}
