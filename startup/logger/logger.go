@@ -16,7 +16,7 @@ func init()  {
 
 	logs.EnableFuncCallDepth(true)
 	logs.SetLogger(logs.AdapterConsole)
-	logs.SetLogger(logs.AdapterMultiFile,`{"filename":"`+logDir+`unifiedpay.log","maxdays":90,"separate":["emergency", "alert", "critical", "error", "warning", "notice", "info", "debug"]}`)
+	logs.SetLogger(logs.AdapterMultiFile,`{"filename":"`+logDir+`/unifiedpay.log","maxdays":90,"separate":["emergency", "alert", "critical", "error", "warning", "notice", "info", "debug"]}`)
 	logs.Async(1e3)
 }
 
