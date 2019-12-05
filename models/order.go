@@ -11,6 +11,7 @@ type Order struct {
 	Id int64
 	OrderId string `orm:"unique"`
 	OrgOrderId string
+	PayType string
 	TransType string
 	MerchantNo string
 	ProductId string
@@ -81,6 +82,9 @@ func (this *Order)Refund(order Order) error {
 func (this *Order)PayParamValidation(order Order) error {
 	if len(strings.TrimSpace(order.OrderId)) == 0 {
 		return errors.New("交易订单为空！")
+	}
+	if len(strings.TrimSpace(order.PayType)) == 0 {
+		return errors.New("支付方式不能为空！")
 	}
 	if order.TransType != "SALE" {
 		return errors.New("交易类型不正确！")
