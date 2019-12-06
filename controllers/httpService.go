@@ -22,7 +22,8 @@ func (this *MainController)Pay(){
 
 
 //下单发送https请求-对接微信支付
-func (this *MainController)WeChatPay() error {
+func (this *MainController)WeChatPay() (string,error) {
+	code_url := ""//支付二维码
 	o := orm.NewOrm()
 	o.Begin()
 	//界面接收的参数
@@ -56,7 +57,7 @@ func (this *MainController)WeChatPay() error {
 	e := order.Pay(o,order)
 	if e != nil {
 		logs.Error(e)
-		return e
+		return code_url,e
 	}else {
 		logs.Info(fmt.Sprintf("订单%v入库成功!",order.OrderId))
 	}
@@ -93,7 +94,7 @@ func (this *MainController)WeChatPay() error {
 	resXml := NativeResponseXml{}
 	e = xml.Unmarshal([]byte(resXmlStr), &resXml)
 	if e != nil {
-		return errors.New(fmt.Sprintf("转换返回报文为结构体失败,失败原因:%v",e.Error()))
+		return code_url,errors.New(fmt.Sprintf("转换返回报文为结构体失败,失败原因:%v",e.Error()))
 	}else {
 		logs.Info("转换返回报文为结构体成功")
 	}
@@ -102,22 +103,34 @@ func (this *MainController)WeChatPay() error {
 	logs.Info("开始解析结构体...")
 	if resXml.Return_code=="SUCCESS" {
 		//通信成功，则不管用户后面是否支付成功，数据都入库
-		o.Commit()
 		if resXml.Result_code=="SUCCESS" {
 			//获取付款二维码
-
+			orderSuccess := models.Order{}
+			orderSuccess.OrderId = order.OrderId
+			o.Read(&orderSuccess, "OrderId")
+			orderSuccess.OrderResultCode = resXml.Return_code
+			orderSuccess.OrderResultDesc = resXml.Return_msg
+			orderSuccess.CodeUrl = resXml.Code_url
+			o.Update(&orderSuccess,"OrderResultCode","OrderResultDesc","CodeUrl")
+			code_url = resXml.Code_url //这里设置真正的支付二维码
 		}else {
-			//查询订单，给订单设置下单失败原因
-
+			//查询订单，给订单设置"下单失败"原因
+			orderFail := models.Order{}
+			orderFail.OrderId = order.OrderId
+			o.Read(&orderFail, "OrderId")
+			orderFail.OrderResultCode = resXml.Return_code
+			orderFail.OrderResultDesc = resXml.Return_msg
+			o.Update(&orderFail,"OrderResultCode","OrderResultDesc")
 		}
+		o.Commit()
 	}else {
 		//通信都失败了，直接回滚
 		logs.Info("通信都失败了，直接回滚")
 		o.Rollback()
-		return errors.New(fmt.Sprintf("通信标识:FAIL,失败原因:%v",resXml.Return_msg))
+		return code_url,errors.New(fmt.Sprintf("通信标识:FAIL,失败原因:%v",resXml.Return_msg))
 	}
 
-	return nil
+	return code_url,nil
 }
 
 
