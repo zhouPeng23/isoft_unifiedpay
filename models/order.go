@@ -12,7 +12,7 @@ type Order struct {
 	Id 						int64
 	OrderId 				string 			`orm:"unique"`					//支付订单号
 	OrgOrderId 				string											//原交易订单号
-	PayType 				string											//支付类型(微信支付)
+	PayStyle 				string											//支付方式(微信支付)
 	TransType 				string											//交易类型（SALE/REFUND）
 	MerchantNo 				string											//商户号
 	ProductId 				string											//商品ID
@@ -20,14 +20,16 @@ type Order struct {
 	TransTime 				string											//交易时间
 	TransAmount 			int64											//交易金额
 	TransCurrCode 			string											//交易币种
-	CodeUrl 				string											//付款二维码（决定下单是否成功）
+	OrderResultCode			string											//下单结果code
+	OrderResultDesc			string											//下单结果描述
+	CodeUrl 				string											//付款二维码
 	RefundReason 			string											//退货原因
 	RefundedAmount 			int64											//已退金额
 	WechatCash				string											//微信零钱支付
 	BankType				string											//付款银行code
 	BankName				string											//付款银行名称
-	ReturnCode	 			string											//错误码
-	ReturnMsg				string											//返回回描述
+	ReturnCode	 			string											//错误码  （支付结果code）
+	ReturnMsg				string											//返回描述（支付结果描述）
 }
 
 
@@ -92,7 +94,7 @@ func (this *Order)PayParamValidation(order Order) error {
 	if len(strings.TrimSpace(order.OrderId)) == 0 {
 		return errors.New("交易订单为空！")
 	}
-	if len(strings.TrimSpace(order.PayType)) == 0 {
+	if len(strings.TrimSpace(order.PayStyle)) == 0 {
 		return errors.New("支付方式不能为空！")
 	}
 	if order.TransType != "SALE" {

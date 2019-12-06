@@ -11,6 +11,7 @@ import (
 	"encoding/xml"
 	"github.com/astaxie/beego/orm"
 	"strconv"
+	"errors"
 )
 
 
@@ -23,6 +24,7 @@ func (this *MainController)Pay(){
 //下单发送https请求-对接微信支付
 func (this *MainController)WeChatPay() error {
 	o := orm.NewOrm()
+	o.Begin()
 	//界面接收的参数
 	//productId := this.GetString("ProductId")
 	//productDesc := this.GetString("ProductDesc")
@@ -80,14 +82,40 @@ func (this *MainController)WeChatPay() error {
 	reqXml.Sign = "0CB01533B8C1EF103065174F50BCA001"
 
 	//设置xml报文体
-	xmlStr, e := xml.Marshal(reqXml)
-	logs.Info("设置xml报文体:%v",string(xmlStr))
-	req.XMLBody(string(xmlStr))
+	reqXmlStr, e := xml.Marshal(reqXml)
+	logs.Info("设置xml报文体:%v",string(reqXmlStr))
+	req.XMLBody(string(reqXmlStr))
 
-	//获取返回消息
-	logs.Info("获取返回消息...")
-	response, e := req.String()
-	logs.Info(fmt.Sprintf("收到应答:%v",response))
+	//获取返回消息、转为结构体
+	logs.Info("接收返回报文...")
+	resXmlStr, e := req.String()
+	logs.Info(fmt.Sprintf("收到报文:%v",resXmlStr))
+	resXml := NativeResponseXml{}
+	e = xml.Unmarshal([]byte(resXmlStr), &resXml)
+	if e != nil {
+		return errors.New(fmt.Sprintf("转换返回报文为结构体失败,失败原因:%v",e.Error()))
+	}else {
+		logs.Info("转换返回报文为结构体成功")
+	}
+
+	//开始解析结构体
+	logs.Info("开始解析结构体...")
+	if resXml.Return_code=="SUCCESS" {
+		//通信成功，则不管用户后面是否支付成功，数据都入库
+		o.Commit()
+		if resXml.Result_code=="SUCCESS" {
+			//获取付款二维码
+
+		}else {
+			//查询订单，给订单设置下单失败原因
+
+		}
+	}else {
+		//通信都失败了，直接回滚
+		logs.Info("通信都失败了，直接回滚")
+		o.Rollback()
+		return errors.New(fmt.Sprintf("通信标识:FAIL,失败原因:%v",resXml.Return_msg))
+	}
 
 	return nil
 }
