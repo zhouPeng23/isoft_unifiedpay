@@ -8,20 +8,22 @@ import (
 )
 
 type Order struct {
-	Id int64
-	OrderId string `orm:"unique"`
-	OrgOrderId string
-	PayType string
-	TransType string
-	MerchantNo string
-	ProductId string
-	ProductDesc string
-	TransTime string
-	TransAmount int64
-	TransCurrCode string
-	TransStatus string
-	RefundReason string
-	RefundedAmount int64
+	Id 						int64
+	OrderId 				string 			`orm:"unique"`					//支付订单号
+	OrgOrderId 				string											//原交易订单号
+	PayType 				string											//支付类型(微信支付)
+	TransType 				string											//交易类型（SALE/REFUND）
+	MerchantNo 				string											//商户号
+	ProductId 				string											//商品ID
+	ProductDesc 			string											//商品描述
+	TransTime 				string											//交易时间
+	TransAmount 			int64											//交易金额
+	TransCurrCode 			string											//交易币种
+	CodeUrl 				string											//付款二维码
+	RefundReason 			string											//退货原因
+	RefundedAmount 			int64											//已退金额
+	ReturnCode	 			string											//错误码
+	ReturnMsg				string											//返回回描述
 }
 
 

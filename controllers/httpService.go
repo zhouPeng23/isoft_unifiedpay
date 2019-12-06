@@ -6,17 +6,11 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego"
-	"sync"
-	"math/rand"
 	"github.com/astaxie/beego/httplib"
 	"crypto/tls"
 	"encoding/xml"
 	"github.com/astaxie/beego/orm"
-)
-
-var (
-	intRandom = 100000000
-	lock sync.Mutex
+	"strconv"
 )
 
 
@@ -37,7 +31,7 @@ func (this *MainController)WeChatPay() error {
 	//transCurrCode := this.GetString("TransCurrCode")
 	productId := "001256"
 	productDesc := "苹果手机"
-	transAmount := 88
+	transAmount := "88"
 	transCurrCode := "CNY"
 	logs.Info("微信扫码支付请求上来了...")
 	logs.Info(fmt.Sprintf("请求参数:productId=%v,productDesc=%v,transAmount=%v,transCurrCode=%v",productId,productDesc,transAmount,transCurrCode))
@@ -51,7 +45,8 @@ func (this *MainController)WeChatPay() error {
 	order.ProductId = productId
 	order.ProductDesc = productDesc
 	order.TransTime = now
-	order.TransAmount = int64(transAmount)
+	amount, _ := strconv.Atoi(transAmount)
+	order.TransAmount = int64(amount)
 	order.TransCurrCode = transCurrCode
 	//入库
 	logs.Info("订单开始入库...")
@@ -70,12 +65,12 @@ func (this *MainController)WeChatPay() error {
 	//组织xml报文
 	reqXml := NativeRequestXml{}
 	reqXml.Appid = "wx2421b1c4370ec43b"
-	reqXml.Mch_id = "10000100"
-	reqXml.Out_trade_no = "1415659990"
+	reqXml.Mch_id = order.MerchantNo
+	reqXml.Out_trade_no = order.OrderId
 	reqXml.Trade_type = "NATIVE"
-	reqXml.Fee_type = "CNY"
-	reqXml.Total_fee = "8800"
-	reqXml.Body = "支付测试"
+	reqXml.Fee_type = order.TransCurrCode
+	reqXml.Total_fee = strconv.Itoa(int(order.TransAmount))
+	reqXml.Body = order.ProductDesc
 	reqXml.Spbill_create_ip = "172.254.249.73"
 	reqXml.Notify_url = "http://wxpay.wxutil.com/pub_v2/pay/notify.v2.php"
 	reqXml.Nonce_str = "1add1a30ac87aa2db72f57a2375d8fec"
@@ -95,21 +90,4 @@ func (this *MainController)WeChatPay() error {
 }
 
 
-//生成订单随机数
-func QueryUniqueRandom() string {
-	if intRandom == 999999999{
-		intRandom = 100000000
-	}
-	lock.Lock()
-	intRandom++
-	lock.Unlock()
-	//获取一个长度为9的唯一数字字符串（给自己人看的）
-	intStr9 := "000000000" + fmt.Sprintf("%d",intRandom)
-	intStr9 = intStr9[len(intStr9)-9:len(intStr9)]
-	//获取一个长度为7的随机数（用于干扰别有用心者）
-	rand.Seed(time.Now().UnixNano())
-	random := rand.Intn(7777777)
-	strRandom7 := "0000000" + fmt.Sprintf("%d", random)
-	strRandom7 = strRandom7[len(strRandom7)-7:len(strRandom7)]
-	return intStr9 + strRandom7
-}
+
