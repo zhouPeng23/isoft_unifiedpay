@@ -35,6 +35,7 @@ func (this *MainController)WeChatPay() error {
 	logs.Info("微信扫码支付请求上来了...")
 	logs.Info(fmt.Sprintf("请求参数:productId=%v,productDesc=%v,transAmount=%v,transCurrCode=%v",productId,productDesc,transAmount,transCurrCode))
 	now := time.Now().Format("20060102150405")
+
 	//组装订单
 	order := models.Order{}
 	order.OrderId = now + QueryUniqueRandom()
@@ -47,6 +48,7 @@ func (this *MainController)WeChatPay() error {
 	amount, _ := strconv.Atoi(transAmount)
 	order.TransAmount = int64(amount)
 	order.TransCurrCode = transCurrCode
+
 	//入库
 	logs.Info("订单开始入库...")
 	e := order.Pay(o,order)
@@ -56,11 +58,13 @@ func (this *MainController)WeChatPay() error {
 	}else {
 		logs.Info(fmt.Sprintf("订单%v入库成功!",order.OrderId))
 	}
+
 	//发送微信下单请求
 	logs.Info("发送微信下单请求...")
 	req := httplib.Post(beego.AppConfig.String("WeChatPay_ReqUrl"))
 	req.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	req.SetTimeout(60*time.Second,60*time.Second)
+
 	//组织xml报文
 	reqXml := NativeRequestXml{}
 	reqXml.Appid = beego.AppConfig.String("WeChatPay_Appid")
@@ -74,10 +78,12 @@ func (this *MainController)WeChatPay() error {
 	reqXml.Notify_url = beego.AppConfig.String("WeChatPay_NotifyUrl")
 	reqXml.Nonce_str = "1add1a30ac87aa2db72f57a2375d8fec"
 	reqXml.Sign = "0CB01533B8C1EF103065174F50BCA001"
+
 	//设置xml报文体
 	xmlStr, e := xml.Marshal(reqXml)
 	logs.Info("设置xml报文体:%v",string(xmlStr))
 	req.XMLBody(string(xmlStr))
+
 	//获取返回消息
 	logs.Info("获取返回消息...")
 	response, e := req.String()
