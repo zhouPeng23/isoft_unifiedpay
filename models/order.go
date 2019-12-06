@@ -28,8 +28,8 @@ type Order struct {
 	WechatCash				string											//微信零钱支付
 	BankType				string											//付款银行code
 	BankName				string											//付款银行名称
-	ReturnCode	 			string											//错误码  （支付结果code）
-	ReturnMsg				string											//返回描述（支付结果描述）
+	PayReturnCode	 		string											//错误码  （支付结果code）
+	PayReturnMsg			string											//返回描述（支付结果描述）
 }
 
 
