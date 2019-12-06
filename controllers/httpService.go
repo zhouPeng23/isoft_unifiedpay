@@ -82,6 +82,7 @@ func (this *MainController)WeChatPay() error {
 	logs.Info("获取返回消息...")
 	response, e := req.String()
 	logs.Info(fmt.Sprintf("收到应答:%v",response))
+
 	return nil
 }
 
