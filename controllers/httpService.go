@@ -40,7 +40,7 @@ func (this *MainController)WeChatPay() error {
 	order.OrderId = now + QueryUniqueRandom()
 	order.PayType = "微信支付"
 	order.TransType = "SALE"
-	order.MerchantNo = beego.AppConfig.String("MerchantNo")
+	order.MerchantNo = beego.AppConfig.String("WeChatPay_MerchantNo")
 	order.ProductId = productId
 	order.ProductDesc = productDesc
 	order.TransTime = now
@@ -58,20 +58,20 @@ func (this *MainController)WeChatPay() error {
 	}
 	//发送微信下单请求
 	logs.Info("发送微信下单请求...")
-	req := httplib.Post(beego.AppConfig.String("WeChatPayUrl"))
+	req := httplib.Post(beego.AppConfig.String("WeChatPay_ReqUrl"))
 	req.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	req.SetTimeout(60*time.Second,60*time.Second)
 	//组织xml报文
 	reqXml := NativeRequestXml{}
-	reqXml.Appid = "wx2421b1c4370ec43b"
+	reqXml.Appid = beego.AppConfig.String("WeChatPay_Appid")
 	reqXml.Mch_id = order.MerchantNo
 	reqXml.Out_trade_no = order.OrderId
-	reqXml.Trade_type = "NATIVE"
+	reqXml.Trade_type = beego.AppConfig.String("WeChatPay_TradeType")
 	reqXml.Fee_type = order.TransCurrCode
 	reqXml.Total_fee = strconv.Itoa(int(order.TransAmount))
 	reqXml.Body = order.ProductDesc
-	reqXml.Spbill_create_ip = "172.254.249.73"
-	reqXml.Notify_url = "http://wxpay.wxutil.com/pub_v2/pay/notify.v2.php"
+	reqXml.Spbill_create_ip = beego.AppConfig.String("WeChatPay_SpbillCreateIp")
+	reqXml.Notify_url = beego.AppConfig.String("WeChatPay_NotifyUrl")
 	reqXml.Nonce_str = "1add1a30ac87aa2db72f57a2375d8fec"
 	reqXml.Sign = "0CB01533B8C1EF103065174F50BCA001"
 	//设置xml报文体

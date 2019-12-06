@@ -7,6 +7,7 @@ import (
 	"fmt"
 )
 
+//交易订单结构体
 type Order struct {
 	Id 						int64
 	OrderId 				string 			`orm:"unique"`					//支付订单号
