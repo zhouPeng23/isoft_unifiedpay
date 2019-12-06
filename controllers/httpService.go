@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"github.com/astaxie/beego/httplib"
 	"crypto/tls"
+	"encoding/xml"
 )
 
 var (
@@ -34,11 +35,11 @@ func (this *MainController)WeChatPay() error {
 	productId := "001256"
 	productDesc := "苹果手机"
 	transAmount := 88
-	transCurrCode := "156"
+	transCurrCode := "CNY"
 	now := time.Now().Format("20060102150405")
 	//组装订单
 	order := models.Order{}
-	order.OrderId = now + queryUniqueRandom()
+	order.OrderId = now + QueryUniqueRandom()
 	order.PayType = "微信支付"
 	order.TransType = "SALE"
 	order.MerchantNo = beego.AppConfig.String("MerchantNo")
@@ -57,17 +58,32 @@ func (this *MainController)WeChatPay() error {
 	req := httplib.Post(beego.AppConfig.String("WeChatPayUrl"))
 	req.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	req.SetTimeout(60*time.Second,60*time.Second)
-	req.XMLBody("")
+	//组织xml报文
+	reqXml := NativeRequestXml{}
+	reqXml.Appid = "wx2421b1c4370ec43b"
+	reqXml.Mch_id = "10000100"
+	reqXml.Out_trade_no = "1415659990"
+	reqXml.Trade_type = "NATIVE"
+	reqXml.Fee_type = "CNY"
+	reqXml.Total_fee = "8800"
+	reqXml.Body = "支付测试"
+	reqXml.Spbill_create_ip = "172.254.249.73"
+	reqXml.Notify_url = "http://wxpay.wxutil.com/pub_v2/pay/notify.v2.php"
+	reqXml.Nonce_str = "1add1a30ac87aa2db72f57a2375d8fec"
+	reqXml.Sign = "0CB01533B8C1EF103065174F50BCA001"
+	//设置xml报文body
+	xmlStr, e := xml.Marshal(reqXml)
+	fmt.Printf("xml报文体:%v\n",string(xmlStr))
+	req.XMLBody(string(xmlStr))
 	//获取返回消息
-	var res interface{}
-	json := req.ToJSON(&res)
-	fmt.Printf("微信支付返货消息:%v\n",json)
+	response, e := req.String()
+	fmt.Printf("收到消息:%v\n",response)
 	return nil
 }
 
 
 //生成订单随机数
-func queryUniqueRandom() string {
+func QueryUniqueRandom() string {
 	if intRandom == 999999999{
 		intRandom = 100000000
 	}

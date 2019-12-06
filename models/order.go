@@ -104,8 +104,8 @@ func (this *Order)PayParamValidation(order Order) error {
 	if order.TransAmount<=0 {
 		return errors.New("交易金额不正确！")
 	}
-	if order.TransCurrCode != "156" {
-		return errors.New("交易币种不正确，目前只支持RMB！")
+	if order.TransCurrCode != "CNY" {
+		return errors.New("交易币种不正确，目前只支持CNY！")
 	}
 	return nil
 }
@@ -137,8 +137,8 @@ func (this *Order)RefundParamValidation(order Order) error {
 	if order.TransAmount<=0 {
 		return errors.New("交易金额不正确！")
 	}
-	if order.TransCurrCode != "156" {
-		return errors.New("交易币种不正确，目前只支持RMB！")
+	if order.TransCurrCode != "CNY" {
+		return errors.New("交易币种不正确，目前只支持CNY！")
 	}
 	if len(strings.TrimSpace(order.RefundReason)) == 0 {
 		return errors.New("退货原因为空！")
