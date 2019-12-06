@@ -24,7 +24,8 @@ type Order struct {
 	RefundReason 			string											//退货原因
 	RefundedAmount 			int64											//已退金额
 	WechatCash				string											//微信零钱支付
-	BankType				string											//付款银行
+	BankType				string											//付款银行code
+	BankName				string											//付款银行名称
 	ReturnCode	 			string											//错误码
 	ReturnMsg				string											//返回回描述
 }
