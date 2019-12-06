@@ -26,7 +26,7 @@ func (this *MainController)WeChatPay() (string,error) {
 	code_url := ""//支付二维码
 	o := orm.NewOrm()
 	o.Begin()
-	//界面接收的参数
+	//界面接收的参数 TODO
 	//productId := this.GetString("ProductId")
 	//productDesc := this.GetString("ProductDesc")
 	//transAmount, _ := strconv.Atoi(this.GetString("TransAmount"))
