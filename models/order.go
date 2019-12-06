@@ -23,7 +23,7 @@ type Order struct {
 	CodeUrl 				string											//付款二维码（决定下单是否成功）
 	RefundReason 			string											//退货原因
 	RefundedAmount 			int64											//已退金额
-	IsWechatCash			bool											//微信零钱支付
+	WechatCash				string											//微信零钱支付
 	BankType				string											//付款银行
 	ReturnCode	 			string											//错误码
 	ReturnMsg				string											//返回回描述
