@@ -58,18 +58,22 @@ func (this *Order)Refund(order Order) error {
 	if err != nil {
 		return errors.New(fmt.Sprintf("原交易订单%v查询失败！",originalOrder.OrderId))
 	}
-	//3.判断退货金额是否大于可退金额
+	//3.查看原交易订单是否支付成功
+	if originalOrder.ReturnCode!="SUCCESS" {
+		return errors.New(fmt.Sprintf("原交易订单付款未成功,不允许退货！"))
+	}
+	//4.判断退货金额是否大于可退金额
 	returnableAmount := originalOrder.TransAmount - originalOrder.RefundedAmount
 	refundAmount := order.TransAmount
 	if refundAmount > returnableAmount{
 		return errors.New("退货金额大于可退金额！")
 	}
-	//4.入库
+	//5.入库
 	_, e := o.Insert(&order)
 	if e != nil {
 		return errors.New(fmt.Sprintf("退货订单%v入库失败,失败原因:%v",order.OrderId,e.Error()))
 	}
-	//5.更新原交易已退金额
+	//6.更新原交易已退金额
 	originalOrder.RefundedAmount = originalOrder.RefundedAmount + refundAmount
 	_, e = o.Update(&originalOrder, "RefundedAmount")
 	if e != nil {

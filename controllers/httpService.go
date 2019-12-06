@@ -23,7 +23,6 @@ func (this *MainController)Pay(){
 //下单发送https请求-对接微信支付
 func (this *MainController)WeChatPay() error {
 	o := orm.NewOrm()
-	//o.Begin()
 	//界面接收的参数
 	//productId := this.GetString("ProductId")
 	//productDesc := this.GetString("ProductDesc")
@@ -83,9 +82,6 @@ func (this *MainController)WeChatPay() error {
 	logs.Info("获取返回消息...")
 	response, e := req.String()
 	logs.Info(fmt.Sprintf("收到应答:%v",response))
-	//下单失败，需要回滚
-	//o.Rollback()
-	//o.Commit()
 	return nil
 }
 
