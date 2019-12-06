@@ -41,7 +41,7 @@ func (this *MainController)WeChatPay() error {
 	//组装订单
 	order := models.Order{}
 	order.OrderId = now + QueryUniqueRandom()
-	order.PayType = "微信支付"
+	order.PayStyle = "微信支付"
 	order.TransType = "SALE"
 	order.MerchantNo = beego.AppConfig.String("WeChatPay_MerchantNo")
 	order.ProductId = productId
