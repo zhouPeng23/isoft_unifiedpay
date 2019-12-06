@@ -2,9 +2,9 @@ package models
 
 import (
 	"github.com/astaxie/beego/orm"
-	"github.com/astaxie/beego/logs"
 	"errors"
 	"strings"
+	"fmt"
 )
 
 type Order struct {
@@ -26,20 +26,17 @@ type Order struct {
 
 
 //下单
-func (this *Order)Pay(order Order) error {
+func (this *Order)Pay(o orm.Ormer,order Order) error {
 	//1.支付参数验证
 	validation := this.PayParamValidation(order)
 	if validation!=nil {
 		return validation
 	}
 	//2.入库
-	o := orm.NewOrm()
 	_, e := o.Insert(&order)
 	if e != nil {
-		logs.Error("支付订单入库失败:",order.OrderId,"失败原因:",e)
-		return errors.New("支付订单入库失败！")
+		return errors.New(fmt.Sprintf(fmt.Sprintf("支付订单%v入库失败,失败原因:%v",order.OrderId,e.Error())))
 	}
-	logs.Info("支付订单入库成功",order.OrderId)
 	return nil
 }
 
@@ -57,7 +54,7 @@ func (this *Order)Refund(order Order) error {
 	originalOrder.OrderId = order.OrgOrderId
 	err := o.Read(&originalOrder, "OrderId")
 	if err != nil {
-		return errors.New("原交易订单查询失败！")
+		return errors.New(fmt.Sprintf("原交易订单%v查询失败！",originalOrder.OrderId))
 	}
 	//3.判断退货金额是否大于可退金额
 	returnableAmount := originalOrder.TransAmount - originalOrder.RefundedAmount
@@ -68,12 +65,14 @@ func (this *Order)Refund(order Order) error {
 	//4.入库
 	_, e := o.Insert(&order)
 	if e != nil {
-		logs.Error("退货订单入库失败:",order.OrderId,"原交易订单:",order.OrgOrderId,"失败原因:",e)
-		return errors.New("退货订单入库失败")
+		return errors.New(fmt.Sprintf("退货订单%v入库失败,失败原因:%v",order.OrderId,e.Error()))
 	}
 	//5.更新原交易已退金额
 	originalOrder.RefundedAmount = originalOrder.RefundedAmount + refundAmount
-	o.Update(&originalOrder,"RefundedAmount")
+	_, e = o.Update(&originalOrder, "RefundedAmount")
+	if e != nil {
+		return errors.New(fmt.Sprintf("退货订单%v更新原交易订单%v已退金额失败,失败原因:%v",order.OrderId,order.OrgOrderId,e.Error()))
+	}
 	return nil
 }
 

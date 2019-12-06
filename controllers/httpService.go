@@ -11,6 +11,7 @@ import (
 	"github.com/astaxie/beego/httplib"
 	"crypto/tls"
 	"encoding/xml"
+	"github.com/astaxie/beego/orm"
 )
 
 var (
@@ -27,6 +28,8 @@ func (this *MainController)Pay(){
 
 //下单发送https请求-对接微信支付
 func (this *MainController)WeChatPay() error {
+	o := orm.NewOrm()
+	//o.Begin()
 	//界面接收的参数
 	//productId := this.GetString("ProductId")
 	//productDesc := this.GetString("ProductDesc")
@@ -36,6 +39,8 @@ func (this *MainController)WeChatPay() error {
 	productDesc := "苹果手机"
 	transAmount := 88
 	transCurrCode := "CNY"
+	logs.Info("微信扫码支付请求上来了...")
+	logs.Info(fmt.Sprintf("请求参数:productId=%v,productDesc=%v,transAmount=%v,transCurrCode=%v",productId,productDesc,transAmount,transCurrCode))
 	now := time.Now().Format("20060102150405")
 	//组装订单
 	order := models.Order{}
@@ -49,12 +54,16 @@ func (this *MainController)WeChatPay() error {
 	order.TransAmount = int64(transAmount)
 	order.TransCurrCode = transCurrCode
 	//入库
-	e := order.Pay(order)
+	logs.Info("订单开始入库...")
+	e := order.Pay(o,order)
 	if e != nil {
 		logs.Error(e)
 		return e
+	}else {
+		logs.Info(fmt.Sprintf("订单%v入库成功!",order.OrderId))
 	}
 	//发送微信下单请求
+	logs.Info("发送微信下单请求...")
 	req := httplib.Post(beego.AppConfig.String("WeChatPayUrl"))
 	req.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	req.SetTimeout(60*time.Second,60*time.Second)
@@ -71,13 +80,17 @@ func (this *MainController)WeChatPay() error {
 	reqXml.Notify_url = "http://wxpay.wxutil.com/pub_v2/pay/notify.v2.php"
 	reqXml.Nonce_str = "1add1a30ac87aa2db72f57a2375d8fec"
 	reqXml.Sign = "0CB01533B8C1EF103065174F50BCA001"
-	//设置xml报文body
+	//设置xml报文体
 	xmlStr, e := xml.Marshal(reqXml)
-	fmt.Printf("xml报文体:%v\n",string(xmlStr))
+	logs.Info("设置xml报文体:%v",string(xmlStr))
 	req.XMLBody(string(xmlStr))
 	//获取返回消息
+	logs.Info("获取返回消息...")
 	response, e := req.String()
-	fmt.Printf("收到消息:%v\n",response)
+	logs.Info(fmt.Sprintf("收到应答:%v",response))
+	//下单失败，需要回滚
+	//o.Rollback()
+	//o.Commit()
 	return nil
 }
 
