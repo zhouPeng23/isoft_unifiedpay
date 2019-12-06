@@ -108,19 +108,21 @@ func (this *MainController)WeChatPay() (string,error) {
 			orderSuccess := models.Order{}
 			orderSuccess.OrderId = order.OrderId
 			o.Read(&orderSuccess, "OrderId")
-			orderSuccess.OrderResultCode = resXml.Return_code
-			orderSuccess.OrderResultDesc = resXml.Return_msg
+			orderSuccess.OrderResultCode = "SUCCESS"
+			orderSuccess.OrderResultDesc = "下单成功"
 			orderSuccess.CodeUrl = resXml.Code_url
 			o.Update(&orderSuccess,"OrderResultCode","OrderResultDesc","CodeUrl")
-			code_url = resXml.Code_url //这里设置真正的支付二维码
+			//这里设置真正的支付二维码
+			code_url = resXml.Code_url
 		}else {
 			//查询订单，给订单设置"下单失败"原因
 			orderFail := models.Order{}
 			orderFail.OrderId = order.OrderId
 			o.Read(&orderFail, "OrderId")
-			orderFail.OrderResultCode = resXml.Return_code
-			orderFail.OrderResultDesc = resXml.Return_msg
+			orderFail.OrderResultCode = resXml.Err_code
+			orderFail.OrderResultDesc = resXml.Err_code_des
 			o.Update(&orderFail,"OrderResultCode","OrderResultDesc")
+			return code_url,errors.New(fmt.Sprintf("下单失败,失败原因:%v",resXml.Err_code_des))
 		}
 		o.Commit()
 	}else {
