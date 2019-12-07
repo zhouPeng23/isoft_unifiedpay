@@ -20,17 +20,27 @@ type Order struct {
 	TransTime 				string											//交易时间
 	TransAmount 			int64											//交易金额
 	TransCurrCode 			string											//交易币种
-	OrderResultCode			string											//下单结果code
+	OrderResultCode			string											//下单业务结果
 	OrderResultDesc			string											//下单结果描述
+	OrderErrCode			string											//下单错误代码
+	OrderErrCodeDes			string											//下单错误代码描述
 	CodeUrl 				string											//付款二维码
+	PayResultCode	 		string											//付款业务结果代码
+	PayResultDesc			string											//付款业务结果描述
+	PayErrCode				string											//付款错误代码
+	PayErrCodeDesc			string											//付款错误代码描述
+	TransactionId			string											//微信官方支付订单号
 	WechatCash				string											//微信零钱支付
 	BankType				string											//付款银行code
 	BankName				string											//付款银行名称
-	PayReturnCode	 		string											//错误码  （支付结果code）
-	PayReturnMsg			string											//返回描述（支付结果描述）
-	TransactionId			string											//微信官方支付订单号
 	PayTimeEnd				string											//支付完成时间
 	RefundReason 			string											//退货原因
+	RefundReqResultCode		string											//退货请求业务结果代码
+	RefundReqResultDesc		string											//退货请求业务结果描述
+	RefundReqErrCode		string											//退货请求错误代码
+	RefundReqErrCodeDesc	string											//退货请求错误代码描述
+	RefundStatus			string											//退款状态
+	RefundSuccessTime		string											//退款成功时间
 	RefundedAmount 			int64											//已退金额
 }
 
@@ -62,12 +72,13 @@ func (this *Order)Refund(order Order) error {
 	o := orm.NewOrm()
 	originalOrder := Order{}
 	originalOrder.OrderId = order.OrgOrderId
-	err := o.Read(&originalOrder, "OrderId")
+	originalOrder.TransType = "SALE"
+	err := o.Read(&originalOrder, "OrderId","TransType")
 	if err != nil {
 		return errors.New(fmt.Sprintf("原交易订单%v查询失败！",originalOrder.OrderId))
 	}
 	//3.查看原交易订单是否支付成功
-	if originalOrder.PayReturnCode!="SUCCESS" {
+	if originalOrder.PayResultCode!="SUCCESS" {
 		return errors.New(fmt.Sprintf("原交易订单付款未成功,不允许退货！"))
 	}
 	//4.判断退货金额是否大于可退金额

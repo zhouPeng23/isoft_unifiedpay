@@ -29,7 +29,7 @@ func (this *MainController)PayNotifyResult() {
 
 //支付结果异步通知-具体处理方法
 func (this *MainController)WeChatPayNofify()  {
-	reqBody := this.Ctx.Input.RequestBody
+	//reqBody := this.Ctx.Input.RequestBody
 
 
 
@@ -123,7 +123,7 @@ func (this *MainController)WeChatPay() (string,error) {
 			orderSuccess := models.Order{}
 			orderSuccess.OrderId = order.OrderId
 			o.Read(&orderSuccess, "OrderId")
-			orderSuccess.OrderResultCode = "SUCCESS"
+			orderSuccess.OrderResultCode = resXml.Result_code
 			orderSuccess.OrderResultDesc = "下单成功"
 			orderSuccess.CodeUrl = resXml.Code_url
 			o.Update(&orderSuccess,"OrderResultCode","OrderResultDesc","CodeUrl")
@@ -134,8 +134,10 @@ func (this *MainController)WeChatPay() (string,error) {
 			orderFail := models.Order{}
 			orderFail.OrderId = order.OrderId
 			o.Read(&orderFail, "OrderId")
-			orderFail.OrderResultCode = resXml.Err_code
-			orderFail.OrderResultDesc = resXml.Err_code_des
+			orderFail.OrderResultCode = resXml.Result_code
+			orderFail.OrderResultDesc = "下单失败"
+			orderFail.OrderErrCode = resXml.Err_code
+			orderFail.OrderErrCodeDes = resXml.Err_code_des
 			o.Update(&orderFail,"OrderResultCode","OrderResultDesc")
 			return code_url,errors.New(fmt.Sprintf("下单失败,失败原因:%v",resXml.Err_code_des))
 		}
