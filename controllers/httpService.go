@@ -15,13 +15,28 @@ import (
 )
 
 
-//支付
+//支付下单-控制器
 func (this *MainController)Pay(){
 	go this.WeChatPay()
 }
 
 
-//下单发送https请求-对接微信支付
+//支付结果异步通知-控制器
+func (this *MainController)PayNotifyResult() {
+	go this.WeChatPayNofify()
+}
+
+
+//支付结果异步通知-具体处理方法
+func (this *MainController)WeChatPayNofify()  {
+	reqBody := this.Ctx.Input.RequestBody
+
+
+
+}
+
+
+//支付下单-具体处理方法
 func (this *MainController)WeChatPay() (string,error) {
 	code_url := ""//支付二维码
 	o := orm.NewOrm()

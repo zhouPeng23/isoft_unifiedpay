@@ -23,13 +23,15 @@ type Order struct {
 	OrderResultCode			string											//下单结果code
 	OrderResultDesc			string											//下单结果描述
 	CodeUrl 				string											//付款二维码
-	RefundReason 			string											//退货原因
-	RefundedAmount 			int64											//已退金额
 	WechatCash				string											//微信零钱支付
 	BankType				string											//付款银行code
 	BankName				string											//付款银行名称
 	PayReturnCode	 		string											//错误码  （支付结果code）
 	PayReturnMsg			string											//返回描述（支付结果描述）
+	TransactionId			string											//微信官方支付订单号
+	PayTimeEnd				string											//支付完成时间
+	RefundReason 			string											//退货原因
+	RefundedAmount 			int64											//已退金额
 }
 
 

@@ -36,7 +36,34 @@ type NativeResponseXml struct {
 	Code_url 			string					`xml:"code_url"`				//二维码链接
 }
 
-
+//微信支付（Native支付）微信官方异步通知
+type NativePayNotifyResult struct {
+	XMLName				xml.Name				`xml:"xml"`
+	return_code
+	return_msg
+	appid
+	mch_id
+	device_info
+	nonce_str
+	sign
+	sign_type
+	result_code
+	err_code
+	err_code_des
+	openid
+	is_subscribe
+	trade_type
+	bank_type
+	total_fee
+	settlement_total_fee
+	fee_type
+	cash_fee
+	cash_fee_type
+	transaction_id
+	out_trade_no
+	attach
+	time_end
+}
 
 
 
