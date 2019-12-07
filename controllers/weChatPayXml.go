@@ -65,7 +65,12 @@ type NativePayNotifyResult struct {
 	Time_end					string					`xml:"time_end"`				//支付完成时间
 }
 
-
+//微信支付（Native支付）异步通知-回复
+type NativePayNotifyResponse struct {
+	XMLName 					xml.Name
+	Return_code					string					`xml:"return_code"`			//返回状态码
+	Return_msg					string					`xml:"return_msg"`			//返回信息
+}
 
 
 

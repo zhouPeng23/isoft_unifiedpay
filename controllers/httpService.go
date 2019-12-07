@@ -28,60 +28,6 @@ func (this *MainController)PayNotifyResult() {
 }
 
 
-//支付结果异步通知-具体处理方法
-func (this *MainController)WeChatPayNofify() error {
-	//获取支付结果异步通知
-	logs.Info("支付结果异步通知上来了...")
-	reqBody := this.Ctx.Input.RequestBody
-	reqXml := NativePayNotifyResult{}
-	e := xml.Unmarshal([]byte(reqBody), &reqXml)
-	if e != nil {
-		return errors.New("支付结果异步通知失败:报文转结构体失败")
-	}else {
-		logs.Info("支付结果异步通知转结构体成功")
-	}
-
-	//开始解析结构体
-	logs.Info("开始解析结构体")
-	if reqXml.Return_code == "SUCCESS" {
-		o := orm.NewOrm()
-		order := models.Order{}
-		orderId := reqXml.Out_trade_no
-		order.OrderId = orderId
-		e := o.Read(&order, "OrderId")
-		if e!=nil {
-			return errors.New(fmt.Sprintf("原交易订单%v查询失败！",orderId))
-		}
-		order.PayResultCode = reqXml.Result_code
-		if reqXml.Result_code=="SUCCESS" {
-			//付款成功
-			order.PayResultDesc = "支付成功"
-			order.TransactionId = reqXml.Transaction_id
-			if len(strings.TrimSpace(reqXml.Cash_fee))>0 {//暂时认为是微信零钱支付
-				order.WechatCash = "微信零钱支付"
-			}
-			if len(strings.TrimSpace(reqXml.Bank_type))>0 {//银行卡支付
-				order.BankType = reqXml.Bank_type
-				order.BankName = beego.AppConfig.String(reqXml.Bank_type)//bank.conf
-			}
-			order.PayTimeEnd = reqXml.Time_end
-		}else {
-			//付款失败
-			order.PayResultDesc = "支付失败"
-			order.PayErrCode = reqXml.Err_code
-			order.PayErrCodeDesc = reqXml.Err_code_des
-		}
-		o.Update(&order)
-		//收到微信支付结果通知后，给一个成功应答
-		//TODO
-	}else {
-		return errors.New(fmt.Sprintf("返回状态码失败，失败原因:%v",reqXml.Return_msg))
-	}
-
-	return nil
-}
-
-
 //支付下单-具体处理方法
 func (this *MainController)WeChatPay() (string,error) {
 	code_url := ""//支付二维码
@@ -197,6 +143,67 @@ func (this *MainController)WeChatPay() (string,error) {
 
 	return code_url,nil
 }
+
+
+//支付结果异步通知-具体处理方法
+func (this *MainController)WeChatPayNofify() {
+	//获取支付结果异步通知
+	logs.Info("支付结果异步通知上来了...")
+	reqBody := this.Ctx.Input.RequestBody
+	reqXml := NativePayNotifyResult{}
+	e := xml.Unmarshal([]byte(reqBody), &reqXml)
+	if e != nil {
+		logs.Info("支付结果异步通知失败:报文转结构体失败")
+	}else {
+		logs.Info("支付结果异步通知转结构体成功")
+	}
+
+	//开始解析结构体
+	logs.Info("开始解析结构体")
+	if reqXml.Return_code == "SUCCESS" {
+		o := orm.NewOrm()
+		order := models.Order{}
+		orderId := reqXml.Out_trade_no
+		order.OrderId = orderId
+		e := o.Read(&order, "OrderId")
+		if e!=nil {
+			logs.Info(fmt.Sprintf("原交易订单%v查询失败！",orderId))
+		}
+		order.PayResultCode = reqXml.Result_code
+		if reqXml.Result_code=="SUCCESS" {
+			//付款成功
+			order.PayResultDesc = "支付成功"
+			order.TransactionId = reqXml.Transaction_id
+			if len(strings.TrimSpace(reqXml.Cash_fee))>0 {//暂时认为是微信零钱支付
+				order.WechatCash = "微信零钱支付"
+			}
+			if len(strings.TrimSpace(reqXml.Bank_type))>0 {//银行卡支付
+				order.BankType = reqXml.Bank_type
+				order.BankName = beego.AppConfig.String(reqXml.Bank_type)//bank.conf
+			}
+			order.PayTimeEnd = reqXml.Time_end
+		}else {
+			//付款失败
+			order.PayResultDesc = "支付失败"
+			order.PayErrCode = reqXml.Err_code
+			order.PayErrCodeDesc = reqXml.Err_code_des
+		}
+		o.Update(&order)
+
+		//收到微信支付结果通知后，给一个成功应答
+		resXml := NativePayNotifyResponse{}
+		resXml.Return_code = "SUCCESS"
+		resXml.Return_msg = "OK"
+		resXmlStr, e := xml.Marshal(resXml)
+		this.Data["xml"] = resXmlStr
+		this.ServeXML()
+	}else {
+		logs.Info(fmt.Sprintf("返回状态码失败，失败原因:%v",reqXml.Return_msg))
+	}
+}
+
+
+
 
 
 
