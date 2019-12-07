@@ -62,14 +62,13 @@ func (this *Order)Pay(o orm.Ormer,order Order) error {
 
 
 //退货
-func (this *Order)Refund(order Order) error {
+func (this *Order)Refund(o orm.Ormer,order Order) error {
 	//1.退货参数验证
 	validation := this.RefundParamValidation(order)
 	if validation!=nil {
 		return validation
 	}
 	//2.查询原交易订单
-	o := orm.NewOrm()
 	originalOrder := Order{}
 	originalOrder.OrderId = order.OrgOrderId
 	originalOrder.TransType = "SALE"

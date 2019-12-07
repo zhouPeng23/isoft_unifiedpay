@@ -171,7 +171,8 @@ func (this *MainController)WeChatPayNofify() {
 		}
 		order.PayResultCode = reqXml.Result_code
 		if reqXml.Result_code=="SUCCESS" {
-			//付款成功
+			//支付成功
+			logs.Info("支付成功")
 			order.PayResultDesc = "支付成功"
 			order.TransactionId = reqXml.Transaction_id
 			if len(strings.TrimSpace(reqXml.Cash_fee))>0 {//暂时认为是微信零钱支付
@@ -183,7 +184,8 @@ func (this *MainController)WeChatPayNofify() {
 			}
 			order.PayTimeEnd = reqXml.Time_end
 		}else {
-			//付款失败
+			//支付失败
+			logs.Info("支付失败")
 			order.PayResultDesc = "支付失败"
 			order.PayErrCode = reqXml.Err_code
 			order.PayErrCodeDesc = reqXml.Err_code_des
