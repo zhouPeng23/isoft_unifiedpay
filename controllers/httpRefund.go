@@ -11,6 +11,7 @@ import (
 	"github.com/astaxie/beego/httplib"
 	"crypto/tls"
 	"encoding/xml"
+	"errors"
 )
 
 //退货请求-控制器
@@ -21,7 +22,7 @@ func (this *MainController) Refund() {
 
 //退货请求-具体处理方法
 func (this *MainController) WeChatRefund() (string,error) {
-	var applyResult string//申请结果
+	applyResult := "申请退款失败" //申请结果，给先给个默认值
 	o := orm.NewOrm()
 	o.Begin()
 	//发起退款申请，接收参数
@@ -94,7 +95,46 @@ func (this *MainController) WeChatRefund() (string,error) {
 	logs.Info("接收返回报文...")
 	resXmlStr, e := req.String()
 	logs.Info(fmt.Sprintf("收到报文:%v",resXmlStr))
+	resXml := RefundResponseXml{}
+	e = xml.Unmarshal([]byte(resXmlStr), &resXml)
+	if e != nil {
+		return applyResult,errors.New(fmt.Sprintf("转换返回报文为结构体失败,失败原因:%v",e.Error()))
+	}else {
+		logs.Info("转换返回报文为结构体成功")
+	}
 
+	//开始解析结构体
+	logs.Info("开始解析结构体...")
+	if resXml.Return_code=="SUCCESS" {
+		//通信成功，数据都入库
+		if resXml.Result_code=="SUCCESS" {
+			//退款申请成功
+			orderSuccess := models.Order{}
+			orderSuccess.OrderId = order.OrderId
+			o.Read(&orderSuccess, "OrderId")
+			orderSuccess.RefundReqResultCode = resXml.Result_code
+			orderSuccess.RefundReqResultDesc = "退款申请成功"
+			o.Update(&orderSuccess)
+			applyResult = "退款申请成功"
+		}else {
+			//退款申请失败
+			orderFail := models.Order{}
+			orderFail.OrderId = order.OrderId
+			o.Read(&orderFail, "OrderId")
+			orderFail.RefundReqResultCode = resXml.Result_code
+			orderFail.RefundReqResultDesc = "退款申请失败"
+			orderFail.RefundReqErrCode = resXml.Err_code
+			orderFail.RefundReqErrCodeDesc = resXml.Err_code_des
+			o.Update(&orderFail)
+			return applyResult,errors.New(fmt.Sprintf("退款申请失败,失败原因:%v",resXml.Err_code_des))
+		}
+		o.Commit()
+	}else {
+		//通信都失败了，直接回滚
+		logs.Info("申请退款通信失败，直接回滚")
+		o.Rollback()
+		return applyResult,errors.New(fmt.Sprintf("通信标识:FAIL,失败原因:%v",resXml.Return_msg))
+	}
 
 	return applyResult,nil
 }
