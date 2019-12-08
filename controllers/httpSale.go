@@ -32,7 +32,6 @@ func (this *MainController)PayNotifyResult() {
 func (this *MainController)WeChatPay() (string,error) {
 	code_url := ""//支付二维码
 	o := orm.NewOrm()
-	//o.Begin()
 	//界面接收的参数
 	//productId := this.GetString("ProductId")
 	//productDesc := this.GetString("ProductDesc")
@@ -133,11 +132,7 @@ func (this *MainController)WeChatPay() (string,error) {
 			o.Update(&orderFail)
 			return code_url,errors.New(fmt.Sprintf("下单失败,失败原因:%v",resXml.Err_code_des))
 		}
-		o.Commit()
 	}else {
-		//通信都失败了，直接回滚
-		//logs.Info("通信都失败了，直接回滚")
-		//o.Rollback()
 		return code_url,errors.New(fmt.Sprintf("通信标识:FAIL,失败原因:%v",resXml.Return_msg))
 	}
 
