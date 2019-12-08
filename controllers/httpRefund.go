@@ -22,7 +22,7 @@ func (this *MainController) Refund() {
 
 //退货请求-具体处理方法
 func (this *MainController) WeChatRefund() (string,error) {
-	applyResult := "申请退款失败" //申请结果，给先给个默认值
+	applyResult := "" //申请结果，给先给个默认值
 	o := orm.NewOrm()
 	o.Begin()
 	//发起退款申请，接收参数
@@ -30,8 +30,8 @@ func (this *MainController) WeChatRefund() (string,error) {
 	//transAmount := this.GetString("TransAmount")
 	//transCurrCode := this.GetString("TransCurrCode")
 	//refundReason := this.GetString("RefundReason")
-	orgOrderId := "201912071835301000000001234567"
-	transAmount := "66"
+	orgOrderId := "201912080943371000000062859163"
+	transAmount := "2"
 	transCurrCode := "CNY"
 	refundReason := "手机发热严重"
 	logs.Info("退货请求上来了...")
@@ -58,7 +58,9 @@ func (this *MainController) WeChatRefund() (string,error) {
 	order.RefundReason = refundReason
 
 	//入库
+	lock.Lock()
 	e := order.Refund(o,order)
+	lock.Unlock()
 	if e != nil {
 		logs.Error(e)
 		return applyResult,e
@@ -67,7 +69,7 @@ func (this *MainController) WeChatRefund() (string,error) {
 	}
 
 	//发送微信申请退款请求
-	logs.Info("发送申请退款求...")
+	logs.Info("发送申请退款请求...")
 	req := httplib.Post(beego.AppConfig.String("WeChatPay_RefundApply"))
 	req.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	req.SetTimeout(60*time.Second,60*time.Second)

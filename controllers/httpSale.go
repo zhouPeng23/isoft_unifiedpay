@@ -34,14 +34,14 @@ func (this *MainController)WeChatPay() (string,error) {
 	o := orm.NewOrm()
 	o.Begin()
 	//界面接收的参数
-	productId := this.GetString("ProductId")
-	productDesc := this.GetString("ProductDesc")
-	transAmount := this.GetString("TransAmount")
-	transCurrCode := this.GetString("TransCurrCode")
-	//productId := "001256"
-	//productDesc := "苹果手机"
-	//transAmount := "88"
-	//transCurrCode := "CNY"
+	//productId := this.GetString("ProductId")
+	//productDesc := this.GetString("ProductDesc")
+	//transAmount := this.GetString("TransAmount")
+	//transCurrCode := this.GetString("TransCurrCode")
+	productId := "001256"
+	productDesc := "苹果手机"
+	transAmount := "5888"
+	transCurrCode := "CNY"
 	logs.Info("微信扫码支付请求上来了...")
 	logs.Info(fmt.Sprintf("请求参数:productId=%v,productDesc=%v,transAmount=%v,transCurrCode=%v",productId,productDesc,transAmount,transCurrCode))
 	now := time.Now().Format("20060102150405")
