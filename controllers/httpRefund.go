@@ -24,7 +24,7 @@ func (this *MainController) Refund() {
 func (this *MainController) WeChatRefund() (string,error) {
 	applyResult := "" //申请结果，给先给个默认值
 	o := orm.NewOrm()
-	o.Begin()
+	//o.Begin()
 	//发起退款申请，接收参数
 	//orgOrderId := this.GetString("OrgOrderId")
 	//transAmount := this.GetString("TransAmount")
@@ -130,11 +130,11 @@ func (this *MainController) WeChatRefund() (string,error) {
 			o.Update(&orderFail)
 			return applyResult,errors.New(fmt.Sprintf("退款申请失败,失败原因:%v",resXml.Err_code_des))
 		}
-		o.Commit()
+		//o.Commit()
 	}else {
 		//通信都失败了，直接回滚
-		logs.Info("申请退款通信失败，直接回滚")
-		o.Rollback()
+		//logs.Info("申请退款通信失败，直接回滚")
+		//o.Rollback()
 		return applyResult,errors.New(fmt.Sprintf("通信标识:FAIL,失败原因:%v",resXml.Return_msg))
 	}
 
