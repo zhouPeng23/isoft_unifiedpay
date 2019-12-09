@@ -183,7 +183,7 @@ func (this *MainController)WeChatRefundNofify() {
 		}
 		o.Update(&order)
 
-		//收到微信支付结果通知后，给一个成功应答
+		//收到微信退款结果通知后，给一个成功应答
 		resXml := RefundNotifyResponse{}
 		resXml.Return_code = "SUCCESS"
 		resXml.Return_msg = "OK"
