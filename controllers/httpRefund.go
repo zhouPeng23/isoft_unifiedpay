@@ -36,7 +36,7 @@ func (this *MainController) WeChatRefund() (string,error) {
 	//transCurrCode := this.GetString("TransCurrCode")
 	//refundReason := this.GetString("RefundReason")
 	orgOrderId := "201912080943371000000062859163"
-	transAmount := "2"
+	transAmount := "20"
 	transCurrCode := "CNY"
 	refundReason := "手机发热严重"
 	logs.Info("退货请求上来了...")
