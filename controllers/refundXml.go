@@ -47,14 +47,37 @@ type RefundResponseXml struct {
 //退款结果异步通知
 type RefundNotifyResult struct {
 	XMLName						xml.Name				`xml:"xml"`
+	Return_code					string					`xml:"return_code"`				//返回状态码
+	Return_msg					string					`xml:"return_msg"`				//返回信息
+	Appid						string					`xml:"appid"`						//公众账号ID
+	Mch_id						string					`xml:"mch_id"`						//退款的商户号
+	Nonce_str					string					`xml:"nonce_str"`					//随机字符串
+	Req_info					string					`xml:"req_info"`					//加密信息
+}
 
+//退款结果加密信息
+type RefInfo struct {
+	XMLName 					xml.Name				`xml:"root"`
+	Transaction_id				string					`xml:"transaction_id"`			//微信订单号
+	Out_trade_no				string					`xml:"out_trade_no"`				//商户订单号
+	Refund_id					string					`xml:"refund_id"` 					//微信退款单号
+	Out_refund_no				string					`xml:"out_refund_no"`				//商户退款单号
+	Total_fee					string					`xml:"total_fee"`					//订单金额
+	Settlement_total_fee		string					`xml:"settlement_total_fee"`		//应结订单金额
+	Refund_fee					string					`xml:"refund_fee"`				//申请退款金额
+	Settlement_refund_fee		string					`xml:"settlement_refund_fee"`	//退款金额
+	Refund_status				string					`xml:"refund_status"`				//退款状态
+	Success_time				string					`xml:"success_time"`				//退款成功时间
+	Refund_recv_accout			string					`xml:"refund_recv_accout"`		//退款入账账户
+	Refund_account				string					`xml:"refund_account"`			//退款资金来源
+	Refund_request_source		string					`xml:"refund_request_source"`	//退款发起来源
 }
 
 //退款异步通知-回复
 type RefundNotifyResponse struct {
 	XMLName 					xml.Name
-	Return_code					string					`xml:"return_code"`			//返回状态码
-	Return_msg					string					`xml:"return_msg"`			//返回信息
+	Return_code					string					`xml:"return_code"`				//返回状态码
+	Return_msg					string					`xml:"return_msg"`				//返回信息
 }
 
 
