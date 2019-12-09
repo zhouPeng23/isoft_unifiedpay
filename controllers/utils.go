@@ -33,4 +33,8 @@ func QueryUniqueRandom() string {
 }
 
 
-
+//退款结果通知，加密信息解密
+func DecodeRefundNotifyReqInfo(reqInfo string) string {
+	//TODO
+	return "待解密逻辑"
+}

@@ -12,7 +12,6 @@ import (
 	"crypto/tls"
 	"encoding/xml"
 	"errors"
-	"strings"
 )
 
 //退货请求-控制器
@@ -24,66 +23,6 @@ func (this *MainController) Refund() {
 //退款结果异步通知-控制器
 func (this *MainController)RefundNotifyResult() {
 	go this.WeChatRefundNofify()
-}
-
-
-//退款结果异步通知-具体处理方法
-func (this *MainController)WeChatRefundNofify() {
-	//获取支付结果异步通知
-	logs.Info("支付结果异步通知上来了...")
-	reqBody := this.Ctx.Input.RequestBody
-	reqXml := NativePayNotifyResult{}
-	e := xml.Unmarshal([]byte(reqBody), &reqXml)
-	if e != nil {
-		logs.Info("支付结果异步通知失败:报文转结构体失败")
-	}else {
-		logs.Info("支付结果异步通知转结构体成功")
-	}
-
-	//开始解析结构体
-	logs.Info("开始解析结构体")
-	if reqXml.Return_code == "SUCCESS" {
-		o := orm.NewOrm()
-		order := models.Order{}
-		orderId := reqXml.Out_trade_no
-		order.OrderId = orderId
-		e := o.Read(&order, "OrderId")
-		if e!=nil {
-			logs.Info(fmt.Sprintf("原交易订单%v查询失败！",orderId))
-		}
-		order.PayResultCode = reqXml.Result_code
-		if reqXml.Result_code=="SUCCESS" {
-			//支付成功
-			logs.Info("支付成功")
-			order.PayResultDesc = "支付成功"
-			order.TransactionId = reqXml.Transaction_id
-			if len(strings.TrimSpace(reqXml.Cash_fee))>0 {//暂时认为是微信零钱支付
-				order.WechatCash = "微信零钱支付"
-			}
-			if len(strings.TrimSpace(reqXml.Bank_type))>0 {//银行卡支付
-				order.BankType = reqXml.Bank_type
-				order.BankName = beego.AppConfig.String(reqXml.Bank_type)//bank.conf
-			}
-			order.PayTimeEnd = reqXml.Time_end
-		}else {
-			//支付失败
-			logs.Info("支付失败")
-			order.PayResultDesc = "支付失败"
-			order.PayErrCode = reqXml.Err_code
-			order.PayErrCodeDesc = reqXml.Err_code_des
-		}
-		o.Update(&order)
-
-		//收到微信支付结果通知后，给一个成功应答
-		resXml := NativePayNotifyResponse{}
-		resXml.Return_code = "SUCCESS"
-		resXml.Return_msg = "OK"
-		resXmlStr, e := xml.Marshal(resXml)
-		this.Data["xml"] = resXmlStr
-		this.ServeXML()
-	}else {
-		logs.Info(fmt.Sprintf("返回状态码失败，失败原因:%v",reqXml.Return_msg))
-	}
 }
 
 
@@ -202,6 +141,60 @@ func (this *MainController) WeChatRefund() (string,error) {
 
 	return applyResult,nil
 }
+
+
+//退款结果异步通知-具体处理方法
+func (this *MainController)WeChatRefundNofify() {
+	//获取支付结果异步通知
+	logs.Info("退款结果异步通知上来了...")
+	reqBody := this.Ctx.Input.RequestBody
+	reqXml := RefundNotifyResult{}
+	e := xml.Unmarshal([]byte(reqBody), &reqXml)
+	if e != nil {
+		logs.Info("退款结果异步通知失败:报文转结构体失败")
+	}else {
+		logs.Info("退款结果异步通知转结构体成功")
+	}
+
+	//开始解析结构体
+	logs.Info("开始解析结构体")
+	if reqXml.Return_code == "SUCCESS" {
+		//加密信息解密
+		reqInfo := reqXml.Req_info
+		reqInfo = DecodeRefundNotifyReqInfo(reqInfo)
+		reqInfoXml := RefInfo{}
+		xml.Unmarshal([]byte(reqInfo), &reqInfoXml)
+		//更新退款结果信息入库
+		o := orm.NewOrm()
+		order := models.Order{}
+		orderId := reqInfoXml.Out_refund_no
+		order.OrderId = orderId
+		e := o.Read(&order, "OrderId")
+		if e!=nil {
+			logs.Info(fmt.Sprintf("退款订单%v查询失败！",orderId))
+		}
+		if reqInfoXml.Refund_status=="SUCCESS" {
+			//退款成功
+			order.RefundStatus = "退款成功"
+			order.RefundSuccessTime = reqInfoXml.Success_time
+		}else {
+			//退款失败
+			order.RefundStatus = "退款失败"
+		}
+		o.Update(&order)
+
+		//收到微信支付结果通知后，给一个成功应答
+		resXml := RefundNotifyResponse{}
+		resXml.Return_code = "SUCCESS"
+		resXml.Return_msg = "OK"
+		resXmlStr, e := xml.Marshal(resXml)
+		this.Data["xml"] = resXmlStr
+		this.ServeXML()
+	}else {
+		logs.Info(fmt.Sprintf("返回状态码失败，失败原因:%v",reqXml.Return_msg))
+	}
+}
+
 
 
 
