@@ -180,6 +180,12 @@ func (this *MainController)WeChatRefundNofify() {
 		}else {
 			//退款失败
 			order.RefundStatus = "退款失败"
+			//退款失败，需要更新原交易已退金额字段
+			orgOrder := models.Order{}
+			orgOrder.OrderId = order.OrgOrderId
+			o.Read(&orgOrder,"OrderId")
+			orgOrder.RefundedAmount = orgOrder.RefundedAmount - order.TransAmount
+			o.Update(&orgOrder)
 		}
 		o.Update(&order)
 
