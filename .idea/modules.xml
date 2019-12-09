@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/unifiedpay.iml" filepath="$PROJECT_DIR$/.idea/unifiedpay.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isoft_unifiedpay.iml" filepath="$PROJECT_DIR$/.idea/isoft_unifiedpay.iml" />
     </modules>
   </component>
 </project>

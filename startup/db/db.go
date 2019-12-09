@@ -6,8 +6,8 @@ import (
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql" // _ 的作用,并不需要把整个包都导入进来,仅仅是是希望它执行init()函数而已
 	"net/url"
-	"unifiedpay/models"
-	"unifiedpay/common/chiperutil"
+	"isoft_unifiedpay/models"
+	"isoft_unifiedpay/common/chiperutil"
 	"github.com/astaxie/beego/logs"
 )
 
@@ -18,7 +18,7 @@ func init() {
 	dbuser := beego.AppConfig.String("db.user")
 	dbpass := beego.AppConfig.String("db.pass")
 	timezone := beego.AppConfig.String("db.timezone")
-	aesChiperKey := beego.AppConfig.String("unifiedpay.aes.cipher.key")
+	aesChiperKey := beego.AppConfig.String("isoft_unifiedpay.aes.cipher.key")
 	// 对数据库密码进行解密
 	dbport = chiperutil.AesDecryptToStr(dbport, aesChiperKey)
 	dbuser = chiperutil.AesDecryptToStr(dbuser, aesChiperKey)

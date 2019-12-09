@@ -1,11 +1,11 @@
 package main
 
 import (
-	_ "unifiedpay/startup/globalSessions"
-	_ "unifiedpay/startup/memory"
-	_ "unifiedpay/startup/logger"
-	_ "unifiedpay/routers"
-	_ "unifiedpay/startup/db"
+	_ "isoft_unifiedpay/startup/globalSessions"
+	_ "isoft_unifiedpay/startup/memory"
+	_ "isoft_unifiedpay/startup/logger"
+	_ "isoft_unifiedpay/routers"
+	_ "isoft_unifiedpay/startup/db"
 	"github.com/astaxie/beego"
 )
 

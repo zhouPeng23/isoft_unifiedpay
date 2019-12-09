@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"unifiedpay/controllers"
+	"isoft_unifiedpay/controllers"
 	"github.com/astaxie/beego"
 )
 
