@@ -10,8 +10,6 @@ type MainController struct {
 
 func (this *MainController) Get() {
 	this.TplName = "index.html"
-	//this.Pay()
-	this.Refund()
 }
 
 

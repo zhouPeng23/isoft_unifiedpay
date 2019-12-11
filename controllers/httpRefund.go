@@ -31,14 +31,14 @@ func (this *MainController) WeChatRefund() (string,error) {
 	applyResult := "" //申请结果，给先给个默认值
 	o := orm.NewOrm()
 	//发起退款申请，接收参数
-	//orgOrderId := this.GetString("OrgOrderId")
-	//transAmount := this.GetString("TransAmount")
-	//transCurrCode := this.GetString("TransCurrCode")
-	//refundReason := this.GetString("RefundReason")
-	orgOrderId := "201912080943371000000062859163"
-	transAmount := "20"
-	transCurrCode := "CNY"
-	refundReason := "手机发热严重"
+	orgOrderId := this.GetString("OrgOrderId")
+	transAmount := this.GetString("TransAmount")
+	transCurrCode := this.GetString("TransCurrCode")
+	refundReason := this.GetString("RefundReason")
+	//orgOrderId := "201912080943371000000062859163"
+	//transAmount := "20"
+	//transCurrCode := "CNY"
+	//refundReason := "手机发热严重"
 	logs.Info("退货请求上来了...")
 	logs.Info(fmt.Sprintf("请求参数:orgOrderId=%v,transAmount=%v,transCurrCode=%v,refundReason=%v",orgOrderId,transAmount,transCurrCode,refundReason))
 	now := time.Now().Format("20060102150405")
