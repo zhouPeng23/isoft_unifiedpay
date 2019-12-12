@@ -34,8 +34,8 @@ func (this *MainController)QueryOrder(){
 		qs = qs.Filter("TransTime__istartswith",TransTime)
 	}
 	if len(TransAmount)>0 {
-		amount, _ := strconv.Atoi(TransAmount)
-		qs = qs.Filter("TransAmount",amount*100)
+		amount, _ := strconv.ParseFloat(TransAmount,64)//string 转 float
+		qs = qs.Filter("TransAmount",int64(amount*100))
 	}
 	qs.All(&orders)
 	dataBytes, _ := json.Marshal(orders)
