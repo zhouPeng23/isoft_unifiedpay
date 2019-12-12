@@ -37,7 +37,7 @@ func (this *MainController)QueryOrder(){
 		amount, _ := strconv.ParseFloat(TransAmount,64)//string 转 float
 		qs = qs.Filter("TransAmount",int64(amount*100))
 	}
-	qs.All(&orders)
+	qs.OrderBy("-TransTime").All(&orders)
 	dataBytes, _ := json.Marshal(orders)
 	this.Data["json"] = string(dataBytes)
 	this.ServeJSON()
