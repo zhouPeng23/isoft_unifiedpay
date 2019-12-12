@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"github.com/astaxie/beego/logs"
 	"fmt"
+	"strconv"
 )
 
 //订单查询
 func (this *MainController)QueryOrder(){
+	logs.Info("调用订单查询接口...")
 	OrderId := this.GetString("OrderId")
 	TransType := this.GetString("TransType")
 	ProductDesc := this.GetString("ProductDesc")
@@ -17,16 +19,26 @@ func (this *MainController)QueryOrder(){
 	TransAmount := this.GetString("TransAmount")
 	logs.Info(fmt.Sprintf("接口入参: OrderId=%v, TransType=%v, ProductDesc=%v, TransTime=%v, TransAmount=%v",OrderId,TransType,ProductDesc,TransTime,TransAmount))
 	o := orm.NewOrm()
-	order := models.Order{}
-	order.OrderId = OrderId
-	//order.TransType = TransType
-	//order.ProductDesc = ProductDesc
-	//order.TransTime = TransTime
-	//amount, _ := strconv.Atoi(TransAmount)
-	//order.TransAmount = int64(amount)
-	order.OrderId = OrderId
-	o.Read(&order,"OrderId")
-	dataBytes, _ := json.Marshal(order)
+	var orders []*models.Order;
+	qs := o.QueryTable("Order").Limit(100)
+	if len(OrderId)>0 {
+		qs.Filter("OrderId__istartswith",OrderId)
+	}
+	if len(TransType)>0 {
+		qs.Filter("TransType",TransType)
+	}
+	if len(ProductDesc)>0 {
+		qs.Filter("ProductDesc__icontains", ProductDesc)
+	}
+	if len(TransTime)>0 {
+		qs.Filter("TransTime__istartswith",TransTime)
+	}
+	if len(TransAmount)>0 {
+		amount, _ := strconv.Atoi(TransAmount)
+		qs.Filter("TransAmount",amount*100)
+	}
+	qs.All(&orders)
+	dataBytes, _ := json.Marshal(orders)
 	this.Data["json"] = string(dataBytes)
 	this.ServeJSON()
 }
