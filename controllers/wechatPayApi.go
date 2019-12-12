@@ -22,20 +22,20 @@ func (this *MainController)QueryOrder(){
 	var orders []*models.Order;
 	qs := o.QueryTable("Order").Limit(100)
 	if len(OrderId)>0 {
-		qs.Filter("OrderId__istartswith",OrderId)
+		qs = qs.Filter("OrderId__istartswith",OrderId)
 	}
 	if len(TransType)>0 {
-		qs.Filter("TransType",TransType)
+		qs = qs.Filter("TransType", TransType)
 	}
 	if len(ProductDesc)>0 {
-		qs.Filter("ProductDesc__icontains", ProductDesc)
+		qs = qs.Filter("ProductDesc__icontains", ProductDesc)
 	}
 	if len(TransTime)>0 {
-		qs.Filter("TransTime__istartswith",TransTime)
+		qs = qs.Filter("TransTime__istartswith",TransTime)
 	}
 	if len(TransAmount)>0 {
 		amount, _ := strconv.Atoi(TransAmount)
-		qs.Filter("TransAmount",amount*100)
+		qs = qs.Filter("TransAmount",amount*100)
 	}
 	qs.All(&orders)
 	dataBytes, _ := json.Marshal(orders)
