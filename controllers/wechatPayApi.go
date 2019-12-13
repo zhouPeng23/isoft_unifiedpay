@@ -42,3 +42,19 @@ func (this *MainController)QueryOrder(){
 	this.Data["json"] = string(dataBytes)
 	this.ServeJSON()
 }
+
+
+//最新订单查询-初始化界面
+func (this *MainController)ShowLastedOrders(){
+	logs.Info("调用订单查询接口...")
+	count := this.GetString("count")
+	logs.Info(fmt.Sprintf("接口入参: count=%v",count))
+	limit, _ := strconv.Atoi(count)
+	o := orm.NewOrm()
+	var orders []*models.Order;
+	qs := o.QueryTable("Order").Limit(limit)
+	qs.OrderBy("-TransTime").All(&orders)
+	dataBytes, _ := json.Marshal(orders)
+	this.Data["json"] = string(dataBytes)
+	this.ServeJSON()
+}
